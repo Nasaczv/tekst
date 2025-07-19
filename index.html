@@ -1,1 +1,394 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8">
+  <title>Export PNG 960x1200</title>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <meta name="viewport" content="width=710, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+  label {
+    margin-bottom: 0;
+}
 
+.range-control {
+    display: flex;
+    flex-wrap: nowrap !important;
+}
+    @font-face {
+      font-family: 'MyriadProBoldCond';
+      src: url('/blob/main/MyriadPro-BoldCond.otf') format('opentype');
+    }
+
+    body {
+      font-family: 'MyriadProBoldCond', sans-serif;
+      padding: 10px;
+    }
+
+    .preview-wrapper {
+      zoom: 37%;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      display: inline-block;
+    }
+
+    .capture-area {
+      position: relative;
+      width: 960px;
+      height: 1200px;
+      overflow: hidden;
+      background-color: white;
+    }
+
+    .bg-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      transform-origin: top left;
+      user-select: none;
+      touch-action: none;
+      pointer-events: none;
+    }
+
+    .overlay-text {
+      position: absolute;
+      bottom: 79px;
+      font-size: 77px;
+      max-width: 73%;
+      left: 0;
+      right: 0;
+      margin: 0 auto;
+      text-align: center;
+      color: #a50000;
+      line-height: 1;
+      white-space: normal;
+      overflow-wrap: break-word;
+      z-index: 555;
+    }
+
+    #export-area-wrapper {
+      position: absolute;
+      left: -9999px;
+      top: -9999px;
+    }
+
+    #html-input {
+      width: 100%;
+      min-height: 100px;
+      border: 1px solid #ccc;
+      padding: 8px;
+      font-size: 16px;
+    }
+
+    [contenteditable][data-placeholder]:empty:before {
+      content: attr(data-placeholder);
+      color: #999;
+      pointer-events: none;
+      display: block;
+    }
+
+    .toolbar button,
+    .toolbar input[type="color"] {
+      margin-right: 8px;
+      font-size: 14px;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+
+    .toolbar {
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      display: flex;
+    }
+
+    .range-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .range-control input[type="range"] {
+      flex: 1;
+    }
+
+    .range-control input[type="number"] {
+      width: 60px;
+    }
+
+    button {
+      font-size: 16px;
+    }
+.capture-area:after {
+    content: '';
+    background-image: url(/blob/main//html-css-25.png);
+    width: 100%;
+    height: 100%;
+    display: block;
+    background-position: center;
+    user-select: none;
+    touch-action: none;
+    pointer-events: none;
+    z-index: 55;
+    position: absolute;
+}
+.giga-wrapper {
+    display: flex;
+    min-width: 700px;
+}
+  </style>
+</head>
+<body>
+    <div class="giga-wrapper">
+        <div>
+<!-- PREVIEW -->
+<div class="preview-wrapper">
+  <div id="preview-area" class="capture-area">
+    <img id="preview-bg" class="bg-img" src="/uploads/2025/07/ТЕКСТ-4-5-1.png" alt="BG" draggable="false">
+    <div id="preview-text" class="overlay-text"></div>
+  </div>
+</div>
+
+<!-- EXPORT -->
+<div id="export-area-wrapper">
+  <div id="export-area" class="capture-area">
+    <img id="export-bg" class="bg-img" src="/uploads/2025/07/ТЕКСТ-4-5-1.png" alt="BG" draggable="false">
+    <div id="export-text" class="overlay-text"></div>
+  </div>
+</div>
+
+<label>📸 Odaberi pozadinsku sliku:
+  <input type="file" id="bg-upload" accept="image/*">
+</label>
+
+<br><br>
+</div>
+<div>
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <button onclick="execCmd('bold')"><b>Bold</b></button>
+  <button onclick="execCmd('italic')"><i>Italic</i></button>
+  <button onclick="execCmd('justifyLeft')">Levo</button>
+  <button onclick="execCmd('justifyCenter')">Centar</button>
+  <button onclick="execCmd('justifyRight')">Desno</button>
+  <button onclick="execCmd('insertLineBreak')">↩ Novi red</button>
+  <input type="color" onchange="execCmd('foreColor', this.value)" value="#a50000">
+</div>
+
+<!-- HTML EDITOR -->
+<label>📝 Unesi HTML tekst:</label><br>
+<div id="html-input" contenteditable="true" data-placeholder="МАРКУС ВИЛИЈАМС ЈЕ<br>НОВО ПОЈАЧАЊЕ<br>ЗВЕЗДЕ!"></div>
+
+<br>
+
+<!-- RANGE KONTROLE -->
+<div class="range-control">
+  <label>🔠 Font size:</label>
+  <input type="range" id="font-size-range" min="10" max="200" value="77">
+  <input type="number" id="font-size-input" min="10" max="200" value="77">
+</div>
+
+<div class="range-control">
+  <label>📏 Line height:</label>
+<input type="range" id="line-height-range" min="0.50" max="1.50" step="0.01" value="1.00">
+<input type="number" id="line-height-input" min="0.50" max="1.50" step="0.01" value="1.00">
+
+</div>
+
+<div class="range-control">
+  <label>📐 Maks širina (%):</label>
+  <input type="range" id="max-width-range" min="20" max="100" value="73">
+  <input type="number" id="max-width-input" min="20" max="100" value="73">
+</div>
+
+<div class="range-control">
+  <label>⬇️ Udaljenost od dna (px):</label>
+  <input type="range" id="bottom-range" min="0" max="400" value="79">
+  <input type="number" id="bottom-input" min="0" max="400" value="79">
+</div>
+
+<br>
+
+<button id="generate">🎨 Generate PNG</button>
+<a id="download-link" style="display: none;" download="output.png">⬇️ Preuzmi sliku</a>
+</div>
+<script>
+  const previewBg = document.getElementById('preview-bg');
+  const exportBg = document.getElementById('export-bg');
+  let scale = 1;
+  let pos = { x: 0, y: 0 };
+  let isDragging = false;
+  let lastTouches = [];
+
+  function updateTransform() {
+    const transform = `translate(${pos.x}px, ${pos.y}px) scale(${scale})`;
+    previewBg.style.transform = transform;
+    exportBg.style.transform = transform;
+  }
+
+  // Desktop drag
+  document.getElementById('preview-area').addEventListener('mousedown', e => {
+    isDragging = true;
+    dragStart = { x: e.clientX - pos.x, y: e.clientY - pos.y };
+  });
+
+  window.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    pos.x = e.clientX - dragStart.x;
+    pos.y = e.clientY - dragStart.y;
+    updateTransform();
+  });
+
+  window.addEventListener('mouseup', () => isDragging = false);
+
+  // Zoom
+  document.getElementById('preview-area').addEventListener('wheel', e => {
+    e.preventDefault();
+    scale += e.deltaY > 0 ? -0.05 : 0.05;
+    scale = Math.min(Math.max(0.2, scale), 5);
+    updateTransform();
+  });
+
+  // Touch drag + pinch zoom
+  const area = document.getElementById('preview-area');
+
+  area.addEventListener('touchstart', e => {
+    lastTouches = [...e.touches];
+    if (e.touches.length === 1) {
+      isDragging = true;
+      dragStart = {
+        x: e.touches[0].clientX - pos.x,
+        y: e.touches[0].clientY - pos.y
+      };
+    }
+  });
+
+  area.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (e.touches.length === 1 && isDragging) {
+      pos.x = e.touches[0].clientX - dragStart.x;
+      pos.y = e.touches[0].clientY - dragStart.y;
+    } else if (e.touches.length === 2) {
+      const dist = (touches) =>
+        Math.hypot(
+          touches[0].clientX - touches[1].clientX,
+          touches[0].clientY - touches[1].clientY
+        );
+      const oldDist = dist(lastTouches);
+      const newDist = dist(e.touches);
+      if (oldDist > 0) {
+        scale *= newDist / oldDist;
+        scale = Math.min(Math.max(0.2, scale), 5);
+      }
+      lastTouches = [...e.touches];
+    }
+    updateTransform();
+  }, { passive: false });
+
+  area.addEventListener('touchend', () => {
+    isDragging = false;
+    lastTouches = [];
+  });
+
+  // Upload
+  document.getElementById('bg-upload').addEventListener('change', function (event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      previewBg.src = e.target.result;
+      exportBg.src = e.target.result;
+      scale = 1;
+      pos = { x: 0, y: 0 };
+      updateTransform();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Text formatting
+  function execCmd(command, value = null) {
+    if (command === 'insertLineBreak') {
+      document.execCommand('insertHTML', false, '<br>');
+    } else {
+      document.execCommand(command, false, value);
+    }
+    syncHTML();
+  }
+
+  function syncHTML() {
+    const html = document.getElementById('html-input').innerHTML;
+    document.getElementById('preview-text').innerHTML = html;
+    document.getElementById('export-text').innerHTML = html;
+  }
+
+  document.getElementById('html-input').addEventListener('input', syncHTML);
+
+  function syncDualInputs(rangeEl, numberEl, callback) {
+    rangeEl.addEventListener('input', () => {
+      numberEl.value = rangeEl.value;
+      callback(rangeEl.value);
+    });
+    numberEl.addEventListener('input', () => {
+      rangeEl.value = numberEl.value;
+      callback(numberEl.value);
+    });
+  }
+
+  syncDualInputs(
+    document.getElementById('font-size-range'),
+    document.getElementById('font-size-input'),
+    value => {
+      document.getElementById('preview-text').style.fontSize = value + 'px';
+      document.getElementById('export-text').style.fontSize = value + 'px';
+    }
+  );
+
+  syncDualInputs(
+    document.getElementById('line-height-range'),
+    document.getElementById('line-height-input'),
+    value => {
+      document.getElementById('preview-text').style.lineHeight = value;
+      document.getElementById('export-text').style.lineHeight = value;
+    }
+  );
+
+  syncDualInputs(
+    document.getElementById('max-width-range'),
+    document.getElementById('max-width-input'),
+    value => {
+      const width = value + '%';
+      document.getElementById('preview-text').style.maxWidth = width;
+      document.getElementById('export-text').style.maxWidth = width;
+    }
+  );
+
+  syncDualInputs(
+    document.getElementById('bottom-range'),
+    document.getElementById('bottom-input'),
+    value => {
+      document.getElementById('preview-text').style.bottom = value + 'px';
+      document.getElementById('export-text').style.bottom = value + 'px';
+    }
+  );
+
+  document.getElementById('generate').addEventListener('click', function () {
+    syncHTML();
+    document.fonts.ready.then(() => {
+      html2canvas(document.getElementById('export-area'), {
+        scale: 1,
+        useCORS: true,
+        backgroundColor: null
+      }).then(canvas => {
+        const link = document.getElementById('download-link');
+        link.href = canvas.toDataURL('image/png');
+        link.style.display = 'inline';
+        link.click();
+      });
+    });
+  });
+
+  updateTransform();
+</script>
+
+</body>
+</html>
