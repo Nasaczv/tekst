@@ -136,6 +136,9 @@
     display: flex;
     min-width: 700px;
 }
+body > div > div:nth-child(1) > label {
+    display: block;
+}
   </style>
 </head>
 <body>
@@ -388,6 +391,19 @@
   });
 
   updateTransform();
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    let metaTag = document.querySelector('meta[name="viewport"]');
+    if (metaTag) {
+      metaTag.setAttribute('content', 'width=720');
+    } else {
+      metaTag = document.createElement('meta');
+      metaTag.name = "viewport";
+      metaTag.content = "width=720";
+      document.head.appendChild(metaTag);
+    }
+  });
 </script>
 
 </body>
