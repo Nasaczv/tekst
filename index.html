@@ -204,53 +204,39 @@
       exportBg.style.transform  = transform;
     }
 
-    // Desktop drag
+    // Drag & Zoom logika
     document.getElementById('preview-area').addEventListener('mousedown', e => {
       isDragging = true;
       dragStart = { x: e.clientX - pos.x, y: e.clientY - pos.y };
     });
-
     window.addEventListener('mousemove', e => {
       if (!isDragging) return;
       pos.x = e.clientX - dragStart.x;
       pos.y = e.clientY - dragStart.y;
       updateTransform();
     });
-
     window.addEventListener('mouseup', () => isDragging = false);
-
-    // Zoom (wheel)
     document.getElementById('preview-area').addEventListener('wheel', e => {
       e.preventDefault();
       scale += e.deltaY > 0 ? -0.05 : 0.05;
       scale = Math.min(Math.max(0.2, scale), 5);
       updateTransform();
     });
-
-    // Touch drag + pinch zoom
     const area = document.getElementById('preview-area');
     area.addEventListener('touchstart', e => {
       lastTouches = [...e.touches];
       if (e.touches.length === 1) {
         isDragging = true;
-        dragStart = {
-          x: e.touches[0].clientX - pos.x,
-          y: e.touches[0].clientY - pos.y
-        };
+        dragStart = { x: e.touches[0].clientX - pos.x, y: e.touches[0].clientY - pos.y };
       }
     });
-
     area.addEventListener('touchmove', e => {
       e.preventDefault();
       if (e.touches.length === 1 && isDragging) {
         pos.x = e.touches[0].clientX - dragStart.x;
         pos.y = e.touches[0].clientY - dragStart.y;
       } else if (e.touches.length === 2) {
-        const dist = (touches) =>
-          Math.hypot(
-            touches[0].clientX - touches[1].clientX,
-            touches[0].clientY - touches[1].clientY
-          );
+        const dist = (t) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
         const oldDist = dist(lastTouches);
         const newDist = dist(e.touches);
         if (oldDist > 0) {
@@ -261,13 +247,12 @@
       }
       updateTransform();
     }, { passive: false });
-
     area.addEventListener('touchend', () => {
       isDragging = false;
       lastTouches = [];
     });
 
-    // Upload
+    // Upload pozadine
     document.getElementById('bg-upload').addEventListener('change', function (event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -282,7 +267,6 @@
       reader.readAsDataURL(file);
     });
 
-    // Tekst komande
     function execCmd(command, value = null) {
       if (command === 'insertLineBreak') {
         document.execCommand('insertHTML', false, '<br>');
@@ -291,56 +275,29 @@
       }
       syncHTML();
     }
-
     function syncHTML() {
       const html = document.getElementById('html-input').innerHTML;
       document.getElementById('preview-text').innerHTML = html;
       document.getElementById('export-text').innerHTML  = html;
     }
-
     function syncDualInputs(rangeEl, numberEl, callback) {
-      rangeEl.addEventListener('input', () => {
-        numberEl.value = rangeEl.value;
-        callback(rangeEl.value);
-      });
-      numberEl.addEventListener('input', () => {
-        rangeEl.value = numberEl.value;
-        callback(numberEl.value);
-      });
+      rangeEl.addEventListener('input', () => { numberEl.value = rangeEl.value; callback(rangeEl.value); });
+      numberEl.addEventListener('input', () => { rangeEl.value = numberEl.value; callback(numberEl.value); });
     }
-
     syncDualInputs(document.getElementById('font-size-range'), document.getElementById('font-size-input'),
-      value => {
-        document.getElementById('preview-text').style.fontSize = value + 'px';
-        document.getElementById('export-text').style.fontSize  = value + 'px';
-      });
-
+      v => { document.getElementById('preview-text').style.fontSize = v + 'px'; document.getElementById('export-text').style.fontSize = v + 'px'; });
     syncDualInputs(document.getElementById('line-height-range'), document.getElementById('line-height-input'),
-      value => {
-        document.getElementById('preview-text').style.lineHeight = value;
-        document.getElementById('export-text').style.lineHeight  = value;
-      });
-
+      v => { document.getElementById('preview-text').style.lineHeight = v; document.getElementById('export-text').style.lineHeight = v; });
     syncDualInputs(document.getElementById('max-width-range'), document.getElementById('max-width-input'),
-      value => {
-        const width = value + '%';
-        document.getElementById('preview-text').style.maxWidth = width;
-        document.getElementById('export-text').style.maxWidth  = width;
-      });
-
+      v => { document.getElementById('preview-text').style.maxWidth = v + '%'; document.getElementById('export-text').style.maxWidth = v + '%'; });
     syncDualInputs(document.getElementById('bottom-range'), document.getElementById('bottom-input'),
-      value => {
-        document.getElementById('preview-text').style.bottom = value + 'px';
-        document.getElementById('export-text').style.bottom  = value + 'px';
-      });
+      v => { document.getElementById('preview-text').style.bottom = v + 'px'; document.getElementById('export-text').style.bottom = v + 'px'; });
 
     document.getElementById('generate').addEventListener('click', function () {
       syncHTML();
       document.fonts.ready.then(() => {
         html2canvas(document.getElementById('export-area'), {
-          scale: 1,
-          useCORS: true,
-          backgroundColor: null
+          scale: 1, useCORS: true, backgroundColor: null
         }).then(canvas => {
           const link = document.getElementById('download-link');
           link.href = canvas.toDataURL('image/png');
@@ -350,23 +307,44 @@
       });
     });
 
-    // ====== DOZVOLJENE BOJE ======
-    const ALLOWED_COLORS = ['#333', '#a50000'];
+    // Boje
+    const ALLOWED_HEX = ['#333333', '#a50000'];
+    const DEFAULT_HEX = '#333333';
     const htmlInput = document.getElementById('html-input');
 
+    function toHex6(color) {
+      if (!color) return '';
+      color = color.trim().toLowerCase();
+      if (color.startsWith('#')) {
+        if (color.length === 4) return `#${color[1]}${color[1]}${color[2]}${color[2]}${color[3]}${color[3]}`;
+        if (color.length === 7) return color;
+      }
+      const m = color.match(/^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+      if (m) {
+        return `#${(+m[1]).toString(16).padStart(2, '0')}${(+m[2]).toString(16).padStart(2, '0')}${(+m[3]).toString(16).padStart(2, '0')}`;
+      }
+      const tmp = document.createElement('span');
+      tmp.style.color = color;
+      document.body.appendChild(tmp);
+      const cs = getComputedStyle(tmp).color;
+      document.body.removeChild(tmp);
+      return toHex6(cs);
+    }
+
     function applyColor(color) {
-      if (!ALLOWED_COLORS.includes(color)) return;
+      const wanted = toHex6(color);
+      if (!ALLOWED_HEX.includes(wanted)) return;
       const sel = window.getSelection();
       if (!sel || sel.rangeCount === 0) return;
       const range = sel.getRangeAt(0);
       if (range.collapsed) return;
       try {
         document.execCommand('styleWithCSS', false, true);
-        const ok = document.execCommand('foreColor', false, color);
+        const ok = document.execCommand('foreColor', false, wanted);
         if (ok) { syncHTML(); return; }
       } catch (e) {}
       const span = document.createElement('span');
-      span.style.color = color;
+      span.style.color = wanted;
       try {
         const frag = range.extractContents();
         span.appendChild(frag);
@@ -376,8 +354,7 @@
         newRange.selectNodeContents(span);
         sel.addRange(newRange);
       } catch (e) {
-        document.execCommand('insertHTML', false,
-          `<span style="color:${color}">${sel.toString()}</span>`);
+        document.execCommand('insertHTML', false, `<span style="color:${wanted}">${sel.toString()}</span>`);
       }
       syncHTML();
     }
@@ -388,17 +365,14 @@
 
     function sanitizeColors(root) {
       root.querySelectorAll('[style]').forEach(el => {
-        let color = (el.style.color || '').replace(/\s+/g, '').toLowerCase();
-        if (color && !ALLOWED_COLORS.includes(color)) {
-          el.style.color = ALLOWED_COLORS[0];
-        }
-        if (el.getAttribute('style') && el.getAttribute('style').trim() === '') {
-          el.removeAttribute('style');
-        }
+        const hex = toHex6(el.style.color || '');
+        if (!ALLOWED_HEX.includes(hex)) el.style.color = DEFAULT_HEX; else el.style.color = hex;
+        if (el.getAttribute('style') && el.getAttribute('style').trim() === '') el.removeAttribute('style');
       });
       root.querySelectorAll('font[color]').forEach(el => {
+        const hex = toHex6(el.getAttribute('color'));
         const span = document.createElement('span');
-        span.style.color = ALLOWED_COLORS[0];
+        span.style.color = ALLOWED_HEX.includes(hex) ? hex : DEFAULT_HEX;
         span.innerHTML = el.innerHTML;
         el.replaceWith(span);
       });
