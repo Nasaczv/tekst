@@ -147,8 +147,8 @@
         <button onclick="execCmd('justifyCenter')">Centar</button>
         <button onclick="execCmd('justifyRight')">Desno</button>
         <button onclick="execCmd('insertLineBreak')">↩ Novi red</button>
-        <!-- Samo #333 -->
-        <button id="apply-333" type="button" title="Oboji u #333">#333</button>
+        <button type="button" class="apply-color" data-color="#333">#333</button>
+        <button type="button" class="apply-color" data-color="#a50000">#a50000</button>
       </div>
 
       <!-- HTML EDITOR -->
@@ -229,7 +229,6 @@
 
     // Touch drag + pinch zoom
     const area = document.getElementById('preview-area');
-
     area.addEventListener('touchstart', e => {
       lastTouches = [...e.touches];
       if (e.touches.length === 1) {
@@ -310,42 +309,30 @@
       });
     }
 
-    syncDualInputs(
-      document.getElementById('font-size-range'),
-      document.getElementById('font-size-input'),
+    syncDualInputs(document.getElementById('font-size-range'), document.getElementById('font-size-input'),
       value => {
         document.getElementById('preview-text').style.fontSize = value + 'px';
         document.getElementById('export-text').style.fontSize  = value + 'px';
-      }
-    );
+      });
 
-    syncDualInputs(
-      document.getElementById('line-height-range'),
-      document.getElementById('line-height-input'),
+    syncDualInputs(document.getElementById('line-height-range'), document.getElementById('line-height-input'),
       value => {
         document.getElementById('preview-text').style.lineHeight = value;
         document.getElementById('export-text').style.lineHeight  = value;
-      }
-    );
+      });
 
-    syncDualInputs(
-      document.getElementById('max-width-range'),
-      document.getElementById('max-width-input'),
+    syncDualInputs(document.getElementById('max-width-range'), document.getElementById('max-width-input'),
       value => {
         const width = value + '%';
         document.getElementById('preview-text').style.maxWidth = width;
         document.getElementById('export-text').style.maxWidth  = width;
-      }
-    );
+      });
 
-    syncDualInputs(
-      document.getElementById('bottom-range'),
-      document.getElementById('bottom-input'),
+    syncDualInputs(document.getElementById('bottom-range'), document.getElementById('bottom-input'),
       value => {
         document.getElementById('preview-text').style.bottom = value + 'px';
         document.getElementById('export-text').style.bottom  = value + 'px';
-      }
-    );
+      });
 
     document.getElementById('generate').addEventListener('click', function () {
       syncHTML();
@@ -363,69 +350,60 @@
       });
     });
 
-    // ====== BOJA: samo #333 + sanitizacija ======
-    const ALLOWED_COLOR = '#333';
+    // ====== DOZVOLJENE BOJE ======
+    const ALLOWED_COLORS = ['#333', '#a50000'];
     const htmlInput = document.getElementById('html-input');
 
-    function applyColor333() {
+    function applyColor(color) {
+      if (!ALLOWED_COLORS.includes(color)) return;
       const sel = window.getSelection();
       if (!sel || sel.rangeCount === 0) return;
       const range = sel.getRangeAt(0);
       if (range.collapsed) return;
-
-      // Pokušaj execCommand
       try {
         document.execCommand('styleWithCSS', false, true);
-        const ok = document.execCommand('foreColor', false, ALLOWED_COLOR);
+        const ok = document.execCommand('foreColor', false, color);
         if (ok) { syncHTML(); return; }
-      } catch (e) { /* nastavi */ }
-
-      // Fallback: Range API
+      } catch (e) {}
       const span = document.createElement('span');
-      span.style.color = ALLOWED_COLOR;
-
+      span.style.color = color;
       try {
         const frag = range.extractContents();
         span.appendChild(frag);
         range.insertNode(span);
-
         sel.removeAllRanges();
         const newRange = document.createRange();
         newRange.selectNodeContents(span);
         sel.addRange(newRange);
       } catch (e) {
-        // Ako ne uspe, ubaci plain HTML
         document.execCommand('insertHTML', false,
-          `<span style="color:${ALLOWED_COLOR}">${sel.toString()}</span>`);
+          `<span style="color:${color}">${sel.toString()}</span>`);
       }
-
       syncHTML();
     }
 
-    document.getElementById('apply-333').addEventListener('click', applyColor333);
+    document.querySelectorAll('.apply-color').forEach(btn => {
+      btn.addEventListener('click', () => applyColor(btn.dataset.color));
+    });
 
     function sanitizeColors(root) {
-      // inline style color → #333
       root.querySelectorAll('[style]').forEach(el => {
-        const color = (el.style.color || '').replace(/\s+/g, '').toLowerCase();
-        if (color && color !== ALLOWED_COLOR) {
-          el.style.color = ALLOWED_COLOR;
+        let color = (el.style.color || '').replace(/\s+/g, '').toLowerCase();
+        if (color && !ALLOWED_COLORS.includes(color)) {
+          el.style.color = ALLOWED_COLORS[0];
         }
         if (el.getAttribute('style') && el.getAttribute('style').trim() === '') {
           el.removeAttribute('style');
         }
       });
-
-      // <font color> → span style="color:#333"
       root.querySelectorAll('font[color]').forEach(el => {
         const span = document.createElement('span');
-        span.style.color = ALLOWED_COLOR;
+        span.style.color = ALLOWED_COLORS[0];
         span.innerHTML = el.innerHTML;
         el.replaceWith(span);
       });
     }
 
-    // PASTE: pročisti sve boje u #333
     htmlInput.addEventListener('paste', (e) => {
       e.preventDefault();
       const cd = e.clipboardData || window.clipboardData;
@@ -437,21 +415,15 @@
       syncHTML();
     });
 
-    // INPUT: dodatna sanitizacija pri svakoj promeni
     htmlInput.addEventListener('input', () => {
       sanitizeColors(htmlInput);
       syncHTML();
     });
 
-    // Ukloni eventualne <input type="color"> ako su ostali
-    document.querySelectorAll('input[type="color"]').forEach(el => el.remove());
-
-    // Init
     updateTransform();
   </script>
 
   <script>
-    // Fiksiranje viewport meta (kao u originalu)
     document.addEventListener('DOMContentLoaded', function () {
       let metaTag = document.querySelector('meta[name="viewport"]');
       if (metaTag) {
