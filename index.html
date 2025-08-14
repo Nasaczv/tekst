@@ -60,7 +60,29 @@
       overflow-wrap: break-word;
       z-index: 555;
     }
-
+/* Color dugmad */
+.toolbar .color-btn{
+  width: 34px;
+  height: 28px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin-right: 8px;
+  cursor: pointer;
+  background: #fff;
+}
+.toolbar .color-dot{
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: currentColor; /* koristi color sa parent-a */
+  border: 1px solid rgba(0,0,0,.15);
+}
+/* Po želji: bolji fokus na tastaturi */
+.toolbar .color-btn:focus{ outline: 2px solid #666; outline-offset: 2px; }
     #export-area-wrapper { position: absolute; left: -9999px; top: -9999px; }
 
     #html-input {
@@ -147,8 +169,13 @@
         <button onclick="execCmd('justifyCenter')">Centar</button>
         <button onclick="execCmd('justifyRight')">Desno</button>
         <button onclick="execCmd('insertLineBreak')">↩ Novi red</button>
-        <button type="button" class="apply-color" data-color="#333">#333</button>
-        <button type="button" class="apply-color" data-color="#a50000">#a50000</button>
+<button type="button" class="apply-color color-btn" data-color="#333" style="color:#333" aria-label="Boja #333">
+  <span class="color-dot" aria-hidden="true"></span>
+</button>
+<button type="button" class="apply-color color-btn" data-color="#a50000" style="color:#a50000" aria-label="Boja #a50000">
+  <span class="color-dot" aria-hidden="true"></span>
+</button>
+
       </div>
 
       <!-- HTML EDITOR -->
@@ -412,3 +439,4 @@
   </script>
 </body>
 </html>
+
