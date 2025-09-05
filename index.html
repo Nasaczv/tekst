@@ -60,29 +60,30 @@
       overflow-wrap: break-word;
       z-index: 555;
     }
-/* Color dugmad */
-.toolbar .color-btn{
-  width: 34px;
-  height: 28px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  margin-right: 8px;
-  cursor: pointer;
-  background: #fff;
-}
-.toolbar .color-dot{
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: currentColor; /* koristi color sa parent-a */
-  border: 1px solid rgba(0,0,0,.15);
-}
-/* Po želji: bolji fokus na tastaturi */
-.toolbar .color-btn:focus{ outline: 2px solid #666; outline-offset: 2px; }
+
+    /* Color dugmad */
+    .toolbar .color-btn{
+      width: 34px;
+      height: 28px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      margin-right: 8px;
+      cursor: pointer;
+      background: #fff;
+    }
+    .toolbar .color-dot{
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: currentColor;
+      border: 1px solid rgba(0,0,0,.15);
+    }
+    .toolbar .color-btn:focus{ outline: 2px solid #666; outline-offset: 2px; }
+
     #export-area-wrapper { position: absolute; left: -9999px; top: -9999px; }
 
     #html-input {
@@ -169,13 +170,12 @@
         <button onclick="execCmd('justifyCenter')">Centar</button>
         <button onclick="execCmd('justifyRight')">Desno</button>
         <button onclick="execCmd('insertLineBreak')">↩ Novi red</button>
-<button type="button" class="apply-color color-btn" data-color="#333" style="color:#333" aria-label="Boja #333">
-  <span class="color-dot" aria-hidden="true"></span>
-</button>
-<button type="button" class="apply-color color-btn" data-color="#a50000" style="color:#a50000" aria-label="Boja #a50000">
-  <span class="color-dot" aria-hidden="true"></span>
-</button>
-
+        <button type="button" class="apply-color color-btn" data-color="#333" style="color:#333" aria-label="Boja #333">
+          <span class="color-dot" aria-hidden="true"></span>
+        </button>
+        <button type="button" class="apply-color color-btn" data-color="#a50000" style="color:#a50000" aria-label="Boja #a50000">
+          <span class="color-dot" aria-hidden="true"></span>
+        </button>
       </div>
 
       <!-- HTML EDITOR -->
@@ -184,7 +184,7 @@
 
       <br>
 
-      <!-- RANGE KONTROLE -->
+      <!-- RANGE KONTROLE (GLOBALNO) -->
       <div class="range-control">
         <label>🔠 Font size:</label>
         <input type="range" id="font-size-range" min="10" max="200" value="77">
@@ -207,6 +207,19 @@
         <label>⬇️ Udaljenost od dna (px):</label>
         <input type="range" id="bottom-range" min="0" max="400" value="79">
         <input type="number" id="bottom-input" min="0" max="400" value="79">
+      </div>
+
+      <!-- RANGE KONTROLE (SELEKTOVANO) -->
+      <div class="range-control">
+        <label>🔤 Selected font size (px):</label>
+        <input type="range" id="sel-font-size-range" min="10" max="200" value="77">
+        <input type="number" id="sel-font-size-input" min="10" max="200" value="77">
+      </div>
+
+      <div class="range-control">
+        <label>📐 Selected line height:</label>
+        <input type="range" id="sel-line-height-range" min="0.50" max="2.00" step="0.01" value="1.00">
+        <input type="number" id="sel-line-height-input" min="0.50" max="2.00" step="0.01" value="1.00">
       </div>
 
       <br>
@@ -302,21 +315,28 @@
       }
       syncHTML();
     }
+
     function syncHTML() {
       const html = document.getElementById('html-input').innerHTML;
       document.getElementById('preview-text').innerHTML = html;
       document.getElementById('export-text').innerHTML  = html;
     }
+
     function syncDualInputs(rangeEl, numberEl, callback) {
       rangeEl.addEventListener('input', () => { numberEl.value = rangeEl.value; callback(rangeEl.value); });
       numberEl.addEventListener('input', () => { rangeEl.value = numberEl.value; callback(numberEl.value); });
     }
+
+    // GLOBALNE KONTROLE
     syncDualInputs(document.getElementById('font-size-range'), document.getElementById('font-size-input'),
       v => { document.getElementById('preview-text').style.fontSize = v + 'px'; document.getElementById('export-text').style.fontSize = v + 'px'; });
+
     syncDualInputs(document.getElementById('line-height-range'), document.getElementById('line-height-input'),
       v => { document.getElementById('preview-text').style.lineHeight = v; document.getElementById('export-text').style.lineHeight = v; });
+
     syncDualInputs(document.getElementById('max-width-range'), document.getElementById('max-width-input'),
       v => { document.getElementById('preview-text').style.maxWidth = v + '%'; document.getElementById('export-text').style.maxWidth = v + '%'; });
+
     syncDualInputs(document.getElementById('bottom-range'), document.getElementById('bottom-input'),
       v => { document.getElementById('preview-text').style.bottom = v + 'px'; document.getElementById('export-text').style.bottom = v + 'px'; });
 
@@ -421,6 +441,56 @@
       syncHTML();
     });
 
+    // ======== SELEKTIVNO STILIZOVANJE (SAMO SELEKTOVANI TEKST) ========
+    function applySelectionStyle(styleName, styleValue) {
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0) return;
+      const range = sel.getRangeAt(0);
+
+      // radi samo unutar editora
+      const editor = document.getElementById('html-input');
+      if (!editor.contains(range.commonAncestorContainer)) return;
+      if (range.collapsed) return;
+
+      try {
+        const span = document.createElement('span');
+        span.style.setProperty(styleName, styleValue);
+        range.surroundContents(span);
+      } catch (e) {
+        const span = document.createElement('span');
+        span.style.setProperty(styleName, styleValue);
+        const frag = range.extractContents();
+        span.appendChild(frag);
+        range.insertNode(span);
+        // rekreira selekciju na novom spanu (opciono)
+        sel.removeAllRanges();
+        const newRange = document.createRange();
+        newRange.selectNodeContents(span);
+        sel.addRange(newRange);
+      }
+      syncHTML();
+    }
+
+    function bindSelectedStyleControls(rangeEl, numberEl, onChange) {
+      rangeEl.addEventListener('input', () => { numberEl.value = rangeEl.value; onChange(rangeEl.value); });
+      numberEl.addEventListener('input', () => { rangeEl.value = numberEl.value; onChange(numberEl.value); });
+    }
+
+    // Konektuj “Selected font size”
+    bindSelectedStyleControls(
+      document.getElementById('sel-font-size-range'),
+      document.getElementById('sel-font-size-input'),
+      (v) => applySelectionStyle('font-size', `${parseFloat(v)}px`)
+    );
+
+    // Konektuj “Selected line height”
+    bindSelectedStyleControls(
+      document.getElementById('sel-line-height-range'),
+      document.getElementById('sel-line-height-input'),
+      (v) => applySelectionStyle('line-height', `${parseFloat(v)}`)
+    );
+
+    // inicijalni transform
     updateTransform();
   </script>
 
@@ -439,4 +509,3 @@
   </script>
 </body>
 </html>
-
