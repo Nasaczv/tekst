@@ -194,7 +194,12 @@
         <input type="range" id="sel-line-height-range" min="0.50" max="2.00" step="0.01" value="1.00">
         <input type="number" id="sel-line-height-input" min="0.50" max="2.00" step="0.01" value="1.00">
       </div>
-
+      <div class="range-control">
+  <label>
+    <input type="checkbox" id="nagradna-igra">
+    🎁 Dodaj "НАГРАДНА ИГРА" na vrh
+  </label>
+</div>
       <br>
 
       <button id="generate">🎨 Generate PNG</button>
@@ -528,6 +533,38 @@
       }
     });
   </script>
+
+<script>
+  const nagradaCheckbox = document.getElementById('nagradna-igra');
+  const editor = document.getElementById('html-input');
+
+  nagradaCheckbox.addEventListener('change', () => {
+    if (nagradaCheckbox.checked) {
+      // Dodaj samo ako već nije ubačeno
+      if (!editor.querySelector('[data-nagrada]')) {
+        const span = document.createElement('span');
+        span.setAttribute('data-nagrada', 'true');
+        span.style.fontSize = '105px';
+        span.textContent = '- НАГРАДНА ИГРА -';
+        editor.insertBefore(span, editor.firstChild);
+        editor.insertBefore(document.createElement('br'), span.nextSibling);
+        syncHTML();
+      }
+    } else {
+      // Ukloni ako postoji
+      const span = editor.querySelector('[data-nagrada]');
+      if (span) {
+        // ukloni i eventualni <br> odmah posle
+        if (span.nextSibling && span.nextSibling.tagName === 'BR') {
+          span.nextSibling.remove();
+        }
+        span.remove();
+        syncHTML();
+      }
+    }
+  });
+</script>
 </body>
 </html>
+
 
