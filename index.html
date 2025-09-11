@@ -106,7 +106,20 @@
 
 #html-input [style*="font-size"] { font-size: inherit !important; }
 #html-input [style*="line-height"] { line-height: inherit !important; }
-
+  /* Grid linija po difoltu uključena */
+  #preview-area.grid-enabled::before {
+    width: 1px;
+    position: absolute;
+    height: 100%;
+    display: block;
+    right: 0;
+    left: 50%;
+    content: '';
+    background: #000;
+    z-index: 45444;
+    top: 0px;
+    transform: translateX(-50%);
+  }
   </style>
 </head>
 <body>
@@ -196,7 +209,14 @@
         <input type="range" id="sel-line-height-range" min="0.50" max="2.00" step="0.01" value="1.00">
         <input type="number" id="sel-line-height-input" min="0.50" max="2.00" step="0.01" value="1.00">
       </div>
-      <div class="range-control">
+<!-- CHECKBOX -->
+<div class="range-control">
+  <label>
+    <input type="checkbox" id="nema-grida">
+    ❌ Nema grida
+  </label>
+</div>
+            <div class="range-control">
   <label>
     <input type="checkbox" id="nagradna-igra">
     🎁 Dodaj "НАГРАДНА ИГРА" na vrh
@@ -566,8 +586,24 @@
     }
   });
 </script>
+  <script>
+  const previewArea = document.getElementById('preview-area');
+  const nemaGridaCheckbox = document.getElementById('nema-grida');
+
+  // Po difoltu uključen grid
+  previewArea.classList.add('grid-enabled');
+
+  nemaGridaCheckbox.addEventListener('change', () => {
+    if (nemaGridaCheckbox.checked) {
+      previewArea.classList.remove('grid-enabled'); // isključi liniju
+    } else {
+      previewArea.classList.add('grid-enabled'); // uključi liniju
+    }
+  });
+</script>
 </body>
 </html>
+
 
 
 
