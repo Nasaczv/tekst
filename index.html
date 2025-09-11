@@ -213,7 +213,7 @@
 <div class="range-control">
   <label>
     <input type="checkbox" id="nema-grida">
-    ❌ Nema grida
+    ✅ Ima grida
   </label>
 </div>
             <div class="range-control">
@@ -587,22 +587,23 @@
   });
 </script>
   <script>
-  const previewArea = document.getElementById('preview-area');
-  const nemaGridaCheckbox = document.getElementById('nema-grida');
+const previewArea = document.getElementById('preview-area');
+const nemaGridaCheckbox = document.getElementById('nema-grida');
 
-  // Po difoltu uključen grid
-  previewArea.classList.add('grid-enabled');
+// Po difoltu grid je isključen (checkbox nije čekiran, nema klase)
 
-  nemaGridaCheckbox.addEventListener('change', () => {
-    if (nemaGridaCheckbox.checked) {
-      previewArea.classList.remove('grid-enabled'); // isključi liniju
-    } else {
-      previewArea.classList.add('grid-enabled'); // uključi liniju
-    }
-  });
+nemaGridaCheckbox.addEventListener('change', () => {
+  if (nemaGridaCheckbox.checked) {
+    previewArea.classList.add('grid-enabled');   // uključi liniju
+  } else {
+    previewArea.classList.remove('grid-enabled'); // isključi liniju
+  }
+});
+
 </script>
 </body>
 </html>
+
 
 
 
