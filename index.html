@@ -40,6 +40,9 @@
       touch-action: none;
       pointer-events: none;
     }
+    .overlay-text {
+      transform-origin: center bottom; /* da lepše skaluje od dna */
+    }
 
     .overlay-text {
       position: absolute;
@@ -209,6 +212,12 @@
         <input type="range" id="sel-line-height-range" min="0.50" max="2.00" step="0.01" value="1.00">
         <input type="number" id="sel-line-height-input" min="0.50" max="2.00" step="0.01" value="1.00">
       </div>
+      <div class="range-control">
+  <label>🔍 Text scale:</label>
+  <input type="range" id="text-scale-range" min="0.50" max="3.00" step="0.01" value="1.00">
+  <input type="number" id="text-scale-input" min="0.50" max="3.00" step="0.01" value="1.00">
+</div>
+
 <!-- CHECKBOX -->
 <div class="range-control">
   <label>
@@ -326,6 +335,15 @@
     // GLOBALNE KONTROLE
     syncDualInputs(document.getElementById('font-size-range'), document.getElementById('font-size-input'),
       v => { document.getElementById('preview-text').style.fontSize = v + 'px'; document.getElementById('export-text').style.fontSize = v + 'px'; });
+    syncDualInputs(
+  document.getElementById('text-scale-range'),
+  document.getElementById('text-scale-input'),
+  v => {
+    const s = parseFloat(v) || 1;
+    document.getElementById('preview-text').style.transform = `scale(${s})`;
+    document.getElementById('export-text').style.transform  = `scale(${s})`;
+  }
+);
 
     syncDualInputs(document.getElementById('line-height-range'), document.getElementById('line-height-input'),
       v => { document.getElementById('preview-text').style.lineHeight = v; document.getElementById('export-text').style.lineHeight = v; });
@@ -603,6 +621,7 @@ nemaGridaCheckbox.addEventListener('change', () => {
 </script>
 </body>
 </html>
+
 
 
 
