@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Export PNG 960x1200</title>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <meta name="viewport" content="width=710, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+  <meta name="viewport" content="width=710, maximum-scale=1">
   <style>
     label { margin-bottom: 0; }
     .capture-area img { width: 100%; }
@@ -131,6 +131,15 @@
       border: 2px solid #fff;
     }
     .range-control input[type="number"] { width: 60px; }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="file"],
+    select,
+    textarea,
+    [contenteditable] {
+      font-size: 16px !important;
+    }
 
     button { font-size: 16px; }
 
@@ -676,11 +685,3 @@ nemaGridaCheckbox.addEventListener('change', () => {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
