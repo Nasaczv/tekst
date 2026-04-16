@@ -180,18 +180,18 @@
   <script>
     // iOS fix: zoom onemogućen samo na iOS, Android može da zumira
     (function() {
-      var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       var meta = document.querySelector('meta[name="viewport"]') || document.createElement('meta');
       meta.name = 'viewport';
+      meta.content = isIOS
+        ? 'width=710, initial-scale=1, maximum-scale=1'
+        : 'width=710, maximum-scale=5, user-scalable=yes';
+      document.head.appendChild(meta);
+      // Drži maximum-scale=1 na iOS (Safari ga ponekad resetuje)
       if (isIOS) {
-        meta.content = 'width=710, maximum-scale=1, user-scalable=no';
-        document.head.appendChild(meta);
-        document.addEventListener('touchstart', function() {
-          meta.content = 'width=710, maximum-scale=1, user-scalable=no';
-        }, { passive: true });
-      } else {
-        meta.content = 'width=710, maximum-scale=5, user-scalable=yes';
-        document.head.appendChild(meta);
+        document.addEventListener('focusin', function() {
+          meta.content = 'width=710, initial-scale=1, maximum-scale=1';
+        });
       }
       // Scroll onemogućen na svim uređajima
       document.documentElement.style.overflow = 'hidden';
