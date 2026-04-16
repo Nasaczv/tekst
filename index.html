@@ -173,21 +173,21 @@
   }
   </style>
   <script>
-    // iOS fix: sprečava zoom na focus inputa
+    // iOS fix: zoom onemogućen samo na iOS, Android može da zumira
     (function() {
+      var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
       var meta = document.querySelector('meta[name="viewport"]') || document.createElement('meta');
       meta.name = 'viewport';
-      function disableZoom() { meta.content = 'width=710, maximum-scale=1, user-scalable=no'; }
-      function enableZoom()  { meta.content = 'width=710, maximum-scale=5, user-scalable=yes'; }
-      document.head.appendChild(meta);
-      disableZoom();
-      document.addEventListener('focusin',  function(e) {
-        var tag = e.target.tagName.toLowerCase();
-        if (tag === 'input' || tag === 'textarea' || tag === 'select' || e.target.isContentEditable) disableZoom();
-      });
-      document.addEventListener('focusout', function() {
-        setTimeout(enableZoom, 300);
-      });
+      if (isIOS) {
+        meta.content = 'width=710, maximum-scale=1, user-scalable=no';
+        document.head.appendChild(meta);
+        document.addEventListener('touchstart', function() {
+          meta.content = 'width=710, maximum-scale=1, user-scalable=no';
+        }, { passive: true });
+      } else {
+        meta.content = 'width=710, maximum-scale=5, user-scalable=yes';
+        document.head.appendChild(meta);
+      }
     })();
   </script>
 </head>
