@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Export PNG 960x1200</title>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <meta name="viewport" content="width=710, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=710, initial-scale=1.0, maximum-scale=1, user-scalable=no">
   <style>
     label { margin-bottom: 0; }
     .capture-area img { width: 100%; }
@@ -91,7 +91,45 @@
       display: flex; align-items: center; gap: 10px;
       margin-bottom: 15px; flex-wrap: wrap;
     }
-    .range-control input[type="range"] { flex: 1; }
+    .range-control input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      background: #ddd;
+      height: 6px;
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+    }
+    .range-control input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: #a50000 !important;
+      cursor: pointer;
+      border: 2px solid #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,.35);
+    }
+    .range-control input[type="range"]::-moz-range-thumb {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: #a50000 !important;
+      cursor: pointer;
+      border: 2px solid #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,.35);
+      -moz-appearance: none;
+    }
+    .range-control input[type="range"]::-ms-thumb {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: #a50000 !important;
+      cursor: pointer;
+      border: 2px solid #fff;
+    }
     .range-control input[type="number"] { width: 60px; }
 
     button { font-size: 16px; }
@@ -153,6 +191,7 @@
     <div>
       <!-- TOOLBAR -->
       <div class="toolbar">
+        <button onclick="toggleUppercase()"><b>AA</b></button>
         <button onclick="execCmd('bold')"><b>Bold</b></button>
         <button onclick="execCmd('italic')"><i>Italic</i></button>
         <button onclick="execCmd('justifyLeft')">Levo</button>
@@ -360,10 +399,17 @@
         html2canvas(document.getElementById('export-area'), {
           scale: 1, useCORS: true, backgroundColor: null
         }).then(canvas => {
-          const link = document.getElementById('download-link');
-          link.href = canvas.toDataURL('image/png');
-          link.style.display = 'inline';
-          link.click();
+          const dataUrl = canvas.toDataURL('image/png');
+          const newTab = window.open('', '_blank');
+          if (newTab) {
+            newTab.document.write(`<!DOCTYPE html><html><head><title>output.png</title><style>body{margin:0;background:#111;display:flex;justify-content:center;}img{max-width:100%;height:auto;display:block;}</style></head><body><img src="${dataUrl}"></body></html>`);
+            newTab.document.close();
+          } else {
+            const link = document.getElementById('download-link');
+            link.href = dataUrl;
+            link.style.display = 'inline';
+            link.click();
+          }
         });
       });
     });
@@ -561,16 +607,25 @@
   </script>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      let metaTag = document.querySelector('meta[name="viewport"]');
-      if (metaTag) {
-        metaTag.setAttribute('content', 'width=720');
-      } else {
-        metaTag = document.createElement('meta');
-        metaTag.name = "viewport";
-        metaTag.content = "width=720";
-        document.head.appendChild(metaTag);
-      }
+    // Uppercase toggle — po difoltu uključen
+    let isUppercase = true;
+    function toggleUppercase() {
+      isUppercase = !isUppercase;
+      const val = isUppercase ? 'uppercase' : '';
+      document.getElementById('html-input').style.textTransform = val;
+      document.getElementById('preview-text').style.textTransform = val;
+      document.getElementById('export-text').style.textTransform  = val;
+      const btn = document.querySelector('button[onclick="toggleUppercase()"]');
+      btn.style.background = isUppercase ? '#a50000' : '';
+      btn.style.color = isUppercase ? '#fff' : '';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('html-input').style.textTransform = 'uppercase';
+      document.getElementById('preview-text').style.textTransform = 'uppercase';
+      document.getElementById('export-text').style.textTransform  = 'uppercase';
+      const btn = document.querySelector('button[onclick="toggleUppercase()"]');
+      if (btn) { btn.style.background = '#a50000'; btn.style.color = '#fff'; }
     });
   </script>
 
