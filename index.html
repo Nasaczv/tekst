@@ -16,9 +16,7 @@
     }
 
     html, body {
-      overflow: hidden;
       height: 100%;
-      overscroll-behavior: none;
     }
 
     body { font-family: 'MyriadProBoldCond', sans-serif; padding: 10px; }
@@ -178,31 +176,44 @@
   }
   </style>
   <script>
-    // Blokira auto-zoom na input focus, ali dozvoljava pinch zoom
     (function () {
+      var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       var meta = document.querySelector('meta[name="viewport"]');
       if (!meta) { meta = document.createElement('meta'); meta.name = 'viewport'; document.head.appendChild(meta); }
-      function noZoom() { meta.content = 'width=710, user-scalable=no'; }
-      function yesZoom() { meta.content = 'width=710, user-scalable=yes'; }
-      yesZoom();
-      var timer = null;
-      function isInput(el) {
-        if (!el) return false;
-        var t = el.tagName ? el.tagName.toLowerCase() : '';
-        return t === 'input' || t === 'textarea' || t === 'select' || el.isContentEditable;
-      }
-      document.addEventListener('focusin', function (e) {
-        if (isInput(e.target)) {
-          if (timer) { clearTimeout(timer); timer = null; }
-          noZoom();
+
+      if (isIOS) {
+        // iOS: zaključaj scroll i sprečavaj auto-zoom na input
+        document.documentElement.style.overflow = 'hidden';
+        document.documentElement.style.height = '100%';
+        document.body.style.overflow = 'hidden';
+        document.body.style.height = '100%';
+
+        meta.content = 'width=710, user-scalable=yes';
+
+        var timer = null;
+        function isInput(el) {
+          if (!el) return false;
+          var t = el.tagName ? el.tagName.toLowerCase() : '';
+          return t === 'input' || t === 'textarea' || t === 'select' || el.isContentEditable;
         }
-      });
-      document.addEventListener('focusout', function () {
-        timer = setTimeout(function () {
-          if (!isInput(document.activeElement)) yesZoom();
-          timer = null;
-        }, 50);
-      });
+        document.addEventListener('focusin', function (e) {
+          if (isInput(e.target)) {
+            if (timer) { clearTimeout(timer); timer = null; }
+            meta.content = 'width=710, user-scalable=no';
+          }
+        });
+        document.addEventListener('focusout', function () {
+          timer = setTimeout(function () {
+            if (!isInput(document.activeElement)) {
+              meta.content = 'width=710, user-scalable=yes';
+            }
+            timer = null;
+          }, 50);
+        });
+      } else {
+        // Android i ostali: slobodan scroll i zoom, bez ograničenja
+        meta.content = 'width=710, user-scalable=yes';
+      }
     })();
   </script>
 </head>
