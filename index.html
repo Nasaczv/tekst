@@ -19,7 +19,6 @@
       overflow: hidden;
       height: 100%;
       overscroll-behavior: none;
-      touch-action: none;
     }
 
     body { font-family: 'MyriadProBoldCond', sans-serif; padding: 10px; }
@@ -178,6 +177,34 @@
     transform: translateX(-50%);
   }
   </style>
+  <script>
+    // Blokira auto-zoom na input focus, ali dozvoljava pinch zoom
+    (function () {
+      var meta = document.querySelector('meta[name="viewport"]');
+      if (!meta) { meta = document.createElement('meta'); meta.name = 'viewport'; document.head.appendChild(meta); }
+      function noZoom() { meta.content = 'width=710, user-scalable=no'; }
+      function yesZoom() { meta.content = 'width=710, user-scalable=yes'; }
+      yesZoom();
+      var timer = null;
+      function isInput(el) {
+        if (!el) return false;
+        var t = el.tagName ? el.tagName.toLowerCase() : '';
+        return t === 'input' || t === 'textarea' || t === 'select' || el.isContentEditable;
+      }
+      document.addEventListener('focusin', function (e) {
+        if (isInput(e.target)) {
+          if (timer) { clearTimeout(timer); timer = null; }
+          noZoom();
+        }
+      });
+      document.addEventListener('focusout', function () {
+        timer = setTimeout(function () {
+          if (!isInput(document.activeElement)) yesZoom();
+          timer = null;
+        }, 50);
+      });
+    })();
+  </script>
 </head>
 <body>
   <div class="giga-wrapper">
