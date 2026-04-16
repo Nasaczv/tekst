@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="sr">
 <head>
   <meta charset="UTF-8">
   <title>Export PNG 960x1200</title>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-  <meta name="viewport" content="width=710, maximum-scale=1">
+  <meta name="viewport" content="width=710">
   <style>
     label { margin-bottom: 0; }
     .capture-area img { width: 100%; }
@@ -20,9 +19,10 @@
       overflow: hidden;
       height: 100%;
       overscroll-behavior: none;
+      touch-action: none;
     }
 
-    body { font-family: 'MyriadProBoldCond', sans-serif; padding: 10px; touch-action: pan-x pan-y; }
+    body { font-family: 'MyriadProBoldCond', sans-serif; padding: 10px; }
 
     .preview-wrapper {
       zoom: 37%;
@@ -178,29 +178,6 @@
     transform: translateX(-50%);
   }
   </style>
-  <script>
-    // iOS fix: zoom onemogućen samo na iOS, Android može da zumira
-    (function() {
-      var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-      var meta = document.querySelector('meta[name="viewport"]') || document.createElement('meta');
-      meta.name = 'viewport';
-      if (isIOS) {
-        meta.content = 'width=710, maximum-scale=1, user-scalable=no';
-        document.head.appendChild(meta);
-        document.addEventListener('touchstart', function() {
-          meta.content = 'width=710, maximum-scale=1, user-scalable=no';
-        }, { passive: true });
-      } else {
-        meta.content = 'width=710, maximum-scale=5, user-scalable=yes';
-        document.head.appendChild(meta);
-      }
-      // Scroll onemogućen na svim uređajima
-      document.documentElement.style.overflow = 'hidden';
-      document.documentElement.style.height = '100%';
-      document.body.style.overflow = 'hidden';
-      document.body.style.height = '100%';
-    })();
-  </script>
 </head>
 <body>
   <div class="giga-wrapper">
