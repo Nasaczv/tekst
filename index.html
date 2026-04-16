@@ -171,6 +171,24 @@
     transform: translateX(-50%);
   }
   </style>
+  <script>
+    // iOS fix: sprečava zoom na focus inputa
+    (function() {
+      var meta = document.querySelector('meta[name="viewport"]') || document.createElement('meta');
+      meta.name = 'viewport';
+      function disableZoom() { meta.content = 'width=710, maximum-scale=1, user-scalable=no'; }
+      function enableZoom()  { meta.content = 'width=710, maximum-scale=5, user-scalable=yes'; }
+      document.head.appendChild(meta);
+      disableZoom();
+      document.addEventListener('focusin',  function(e) {
+        var tag = e.target.tagName.toLowerCase();
+        if (tag === 'input' || tag === 'textarea' || tag === 'select' || e.target.isContentEditable) disableZoom();
+      });
+      document.addEventListener('focusout', function() {
+        setTimeout(enableZoom, 300);
+      });
+    })();
+  </script>
 </head>
 <body>
   <div class="giga-wrapper">
