@@ -436,31 +436,59 @@
     syncDualInputs(document.getElementById('bottom-range'), document.getElementById('bottom-input'),
       v => { document.getElementById('preview-text').style.bottom = v + 'px'; document.getElementById('export-text').style.bottom = v + 'px'; });
 
-    document.getElementById('generate').addEventListener('click', function () {
-      syncHTML();
-      document.fonts.ready.then(() => {
-        html2canvas(document.getElementById('export-area'), {
-          scale: 1, useCORS: true, backgroundColor: null
-        }).then(canvas => {
-          const dataUrl = canvas.toDataURL('image/png');
+document.getElementById('generate').addEventListener('click', function () {
+  syncHTML();
 
-          // 1. Odmah preuzmi
-          const link = document.createElement('a');
-          link.href = dataUrl;
-          link.download = 'output.png';
-          link.click();
+  document.fonts.ready.then(() => {
+    html2canvas(document.getElementById('export-area'), {
+      scale: 1,
+      useCORS: true,
+      backgroundColor: null
+    }).then(canvas => {
+      const dataUrl = canvas.toDataURL('image/png');
 
-          // 2. Nakon 300ms otvori u novom tabu
-          setTimeout(() => {
-            const newTab = window.open('', '_blank');
-            if (newTab) {
-              newTab.document.write(`<!DOCTYPE html><html><head><title>output.png</title><style>body{margin:0;background:#111;display:flex;justify-content:center;}img{max-width:100%;height:auto;display:block;}</style></head><body><img src="${dataUrl}"></body></html>`);
-              newTab.document.close();
-            }
-          }, 300);
-        });
-      });
+      const newTab = window.open('', '_blank');
+
+      if (newTab) {
+        newTab.document.write(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>output.png</title>
+            <style>
+              body {
+                margin: 0;
+                background: #111;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+              }
+              img {
+                max-width: 100%;
+                height: auto;
+                display: block;
+              }
+            </style>
+          </head>
+          <body>
+            <img src="${dataUrl}">
+          </body>
+          </html>
+        `);
+        newTab.document.close();
+      }
+
+      setTimeout(() => {
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = 'output.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }, 500);
     });
+  });
+});
 
     const ALLOWED_HEX = ['#333333', '#a50000'];
     const DEFAULT_HEX = '#333333';
